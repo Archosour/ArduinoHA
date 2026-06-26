@@ -6,12 +6,11 @@
 #include <ArduinoJson.h>
 #include <EEPROM.h>
 #include "Config.h"
+#include "Node.h"
 
 // --------------------------------------------------
 // Network
 // --------------------------------------------------
-
-byte mac[6];
 
 IPAddress ip;
 
@@ -23,8 +22,6 @@ PubSubClient mqtt(ethClient);
 // Node ID
 // --------------------------------------------------
 
-String nodeId;
-String statusTopic = "home/" + nodeId + "/status";
 
 const uint8_t analogPins[4] = {A0, A1, A2, A3};
 
@@ -69,43 +66,7 @@ const unsigned long publishInterval = 5000;
 
 
 
-void buildNodeId()
-{
-  nodeId = "MEGA_";
 
-  for (size_t i = 0; i < UniqueIDsize; i++)
-  {
-    char buf[3];
-    sprintf(buf, "%02X", UniqueID[i]);
-    nodeId += buf;
-  }
-
-  Serial.print("Node ID: ");
-  Serial.println(nodeId);
-}
-
-
-void buildMac()
-{
-    mac[0] = 0x02;  // Locally administered MAC
-
-    mac[0] = 0x02;
-    mac[1] = UniqueID[0];
-    mac[2] = UniqueID[2];
-    mac[3] = UniqueID[4];
-    mac[4] = UniqueID[6];
-    mac[5] = UniqueID[8];
-
-    Serial.print("MAC: ");
-
-    for (int i = 0; i < 6; i++)
-    {
-        Serial.print(mac[i], HEX);
-        Serial.print(":");
-    }
-
-    Serial.println();
-}
 
 // --------------------------------------------------
 
@@ -603,6 +564,9 @@ void setup()
 
   mqttServer.fromString(config.mqttServer);
 
+  Serial.print("Parsed MQTT Server: ");
+Serial.println(mqttServer);
+
   buildNodeId();
   buildMac();
 
@@ -646,6 +610,10 @@ if (dhcpResult == 0)
   Serial.println(Ethernet.localIP());
 
   mqtt.setServer(mqttServer, 1883);
+
+Serial.print("MQTT Server set to: ");
+Serial.println(mqttServer);
+
   mqtt.setBufferSize(1024);
 
   mqtt.setCallback(callback);
