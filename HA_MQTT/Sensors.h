@@ -8,7 +8,7 @@ extern float temperatures[];
 extern bool inputStates[];
 extern bool inputChanged[];
 
-void setupDigitalInputs();
+void initDigitalInputs();
 void updateSensors();
 void updateInputs();
 

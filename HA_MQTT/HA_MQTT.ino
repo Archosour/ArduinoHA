@@ -9,6 +9,7 @@
 #include "Node.h"
 #include "Pins.h"
 #include "Sensors.h"
+#include "Outputs.h"
 
 // --------------------------------------------------
 // Network
@@ -23,14 +24,6 @@ PubSubClient mqtt(ethClient);
 // --------------------------------------------------
 // Node ID
 // --------------------------------------------------
-
-bool relayStates[NUM_RELAYS] =
-{
-    false, false, false, false,
-    false, false, false, false
-};
-
-uint8_t pwmValues[NUM_PWM] = { 0, 0, 0};
 
 unsigned long lastPublish = 0;
 const unsigned long publishInterval = 5000;
@@ -240,43 +233,16 @@ void callback(char* topic, byte* payload, unsigned int length)
 
     String topicStr = topic;
 
-    for (int relay = 0; relay < NUM_RELAYS; relay++)
+    for (int i = 0; i < NUM_RELAYS; i++)
+{
+    String relayTopic =
+        "home/" + nodeId + "/relay" + String(i + 1) + "/set";
+
+    if (topicStr == relayTopic)
     {
-        String expectedTopic =
-            "home/" +
-            nodeId +
-            "/relay" +
-            String(relay + 1) +
-            "/set";
-
-        if (topicStr == expectedTopic)
-        {
-            relayStates[relay] =
-                (msg == "ON");
-
-            digitalWrite(
-                relayPins[relay],
-                relayStates[relay]
-            );
-
-            mqtt.publish(
-                ("home/" +
-                 nodeId +
-                 "/relay" +
-                 String(relay + 1) +
-                 "/state").c_str(),
-                relayStates[relay]
-                    ? "ON"
-                    : "OFF",
-                true
-            );
-
-            Serial.print("Relay ");
-            Serial.print(relay + 1);
-            Serial.print(" = ");
-            Serial.println(msg);
-        }
+        setRelay(i, msg == "ON");
     }
+}
 
     for (int pwm = 0; pwm < NUM_PWM; pwm++)
     {
@@ -306,10 +272,7 @@ void callback(char* topic, byte* payload, unsigned int length)
                       doc["brightness"] | 255;
               }
 
-              analogWrite(
-                  pwmPins[pwm],
-                  pwmValues[pwm]
-              );
+              setPWM(pwm, pwmValues[pwm]);
 
               String statePayload =
                   "{\"state\":\"" +
@@ -499,20 +462,8 @@ void setup()
   buildNodeId();
   buildMac();
 
-
-  for (int i = 0; i < NUM_RELAYS; i++)
-  {
-    pinMode(relayPins[i], OUTPUT);
-    digitalWrite(relayPins[i], LOW);
-  }
-
-  setupDigitalInputs();
-
-  for (int i = 0; i < NUM_PWM; i++)
-  {
-    pinMode(pwmPins[i], OUTPUT);
-    //analogWrite(pwmPins[i], 0);
-  }
+  initOutputs();
+  initDigitalInputs();
 
   Ethernet.init(10);
   int dhcpResult = Ethernet.begin(mac);

@@ -6,7 +6,7 @@ float temperatures[NUM_ANALOG];
 bool inputStates[NUM_INPUTS];
 bool inputChanged[NUM_INPUTS];
 
-void setupDigitalInputs()
+void initDigitalInputs()
 {
   for (int i = 0; i < NUM_INPUTS; i++)
   {
