@@ -7,6 +7,7 @@
 #include <EEPROM.h>
 #include "Config.h"
 #include "Node.h"
+#include "Pins.h"
 
 // --------------------------------------------------
 // Network
@@ -28,45 +29,24 @@ const uint8_t analogPins[4] = {A0, A1, A2, A3};
 int adcValues[4];
 float temperatures[4];
 
-const uint8_t NUM_RELAYS = 8;
-const uint8_t relayPins[NUM_RELAYS] = { 22, 23, 24, 25, 26, 27, 28, 29};
 bool relayStates[NUM_RELAYS] =
 {
     false, false, false, false,
     false, false, false, false
 };
 
-const uint8_t NUM_INPUTS = 8;
-const uint8_t inputPins[NUM_INPUTS] = { 30, 31, 32, 33, 34, 35, 36, 37};
 bool inputStates[NUM_INPUTS] =
 {
     false, false, false, false,
     false, false, false, false
 };
 
-const uint8_t NUM_PWM = 3;
-const uint8_t pwmPins[NUM_PWM] = { 44, 45, 46 };
 uint8_t pwmValues[NUM_PWM] = { 0, 0, 0};
 
 unsigned long lastPublish = 0;
 const unsigned long publishInterval = 5000;
 
-
-
-
-
-
-
-
-
 // --------------------------------------------------
-
-
-
-
-
-
-
 
 // --------------------------------------------------
 
