@@ -5,6 +5,7 @@
 #include <math.h>
 #include <ArduinoJson.h>
 #include <EEPROM.h>
+#include "Config.h"
 
 // --------------------------------------------------
 // Network
@@ -54,82 +55,18 @@ unsigned long lastPublish = 0;
 const unsigned long publishInterval = 5000;
 
 
-#define CONFIG_MAGIC 0x435A1234
 
-struct Config
-{
-    uint32_t magic;
 
-    char mqttServer[16];
 
-    char mqttUser[32];
 
-    char mqttPassword[32];
 
-    bool dhcpEnabled;
-
-    uint8_t reserved[32];
-};
-
-Config config;
 
 
 // --------------------------------------------------
 
-void saveConfig()
-{
-    EEPROM.put(0, config);
-}
 
-bool loadConfig()
-{
-    EEPROM.get(0, config);
 
-    return config.magic == CONFIG_MAGIC;
-}
 
-void configureNode()
-{
-    Serial.println();
-    Serial.println("=== CONFIGURATION MODE ===");
-
-    Serial.println("MQTT Server:");
-    while (!Serial.available());
-    String server = Serial.readStringUntil('\n');
-    server.trim();
-
-    Serial.println("MQTT User:");
-    while (!Serial.available());
-    String user = Serial.readStringUntil('\n');
-    user.trim();
-
-    Serial.println("MQTT Password:");
-    while (!Serial.available());
-    String password = Serial.readStringUntil('\n');
-    password.trim();
-
-    config.magic = CONFIG_MAGIC;
-
-    strncpy(config.mqttServer,
-            server.c_str(),
-            sizeof(config.mqttServer));
-
-    strncpy(config.mqttUser,
-            user.c_str(),
-            sizeof(config.mqttUser));
-
-    strncpy(config.mqttPassword,
-            password.c_str(),
-            sizeof(config.mqttPassword));
-
-    saveConfig();
-
-    Serial.println();
-    Serial.println("Configuration saved.");
-    Serial.println("Reset Arduino.");
-
-    while (true);
-}
 
 
 void buildNodeId()
