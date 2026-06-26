@@ -8,6 +8,7 @@
 #include "Config.h"
 #include "Node.h"
 #include "Pins.h"
+#include "Sensors.h"
 
 // --------------------------------------------------
 // Network
@@ -23,19 +24,7 @@ PubSubClient mqtt(ethClient);
 // Node ID
 // --------------------------------------------------
 
-
-const uint8_t analogPins[4] = {A0, A1, A2, A3};
-
-int adcValues[4];
-float temperatures[4];
-
 bool relayStates[NUM_RELAYS] =
-{
-    false, false, false, false,
-    false, false, false, false
-};
-
-bool inputStates[NUM_INPUTS] =
 {
     false, false, false, false,
     false, false, false, false
@@ -211,12 +200,10 @@ void publishDiscovery()
 
 void publishSensors()
 {
-  for (int i = 0; i < 4; i++)
+  updateSensors();
+
+  for (int i = 0; i < NUM_ANALOG; i++)
   {
-    adcValues[i] = analogRead(analogPins[i]);
-
-    temperatures[i] = adcToTemperature(adcValues[i]);
-
     mqtt.publish(
       ("home/" + nodeId +
        "/analog" + String(i + 1)).c_str(),
@@ -445,57 +432,19 @@ void reconnectMQTT()
   }
 }
 
-float adcToTemperature(int adc)
+void publishInputChanges()
 {
-  if (adc <= 0) adc = 1;
-  if (adc >= 1023) adc = 1022;
-
-  const float SERIES_RESISTOR = 10000.0;
-  const float NOMINAL_RESISTANCE = 10000.0;
-  const float NOMINAL_TEMPERATURE = 25.0;
-  const float B_COEFFICIENT = 3950.0;
-
-  float resistance =
-    SERIES_RESISTOR /
-    ((1023.0 / adc) - 1.0);
-
-  float steinhart;
-
-  steinhart = resistance / NOMINAL_RESISTANCE;
-  steinhart = log(steinhart);
-  steinhart /= B_COEFFICIENT;
-  steinhart += 1.0 / (NOMINAL_TEMPERATURE + 273.15);
-  steinhart = 1.0 / steinhart;
-  steinhart -= 273.15;
-
-  return steinhart;
-}
-
-void readInputs()
-{
-    for (int i = 0; i < NUM_INPUTS; i++)
+    for(int i = 0; i < NUM_INPUTS; i++)
     {
-        bool newState = !digitalRead(inputPins[i]); 
-        // inverted because pullup
-
-        if (newState != inputStates[i])
+        if(inputChanged[i])
         {
-            inputStates[i] = newState;
-
-            String topic =
-                "home/" + nodeId +
-                "/input" + String(i + 1);
+          String topic = "home/" + nodeId + "/input" + String(i + 1);
 
             mqtt.publish(
                 topic.c_str(),
-                newState ? "ON" : "OFF",
+                inputStates[i] ? "ON" : "OFF",
                 true
             );
-
-            Serial.print("Input ");
-            Serial.print(i + 1);
-            Serial.print(" = ");
-            Serial.println(newState ? "ON" : "OFF");
         }
     }
 }
@@ -545,7 +494,7 @@ void setup()
   mqttServer.fromString(config.mqttServer);
 
   Serial.print("Parsed MQTT Server: ");
-Serial.println(mqttServer);
+  Serial.println(mqttServer);
 
   buildNodeId();
   buildMac();
@@ -557,42 +506,29 @@ Serial.println(mqttServer);
     digitalWrite(relayPins[i], LOW);
   }
 
-  for (int i = 0; i < NUM_INPUTS; i++)
-  {
-    pinMode(inputPins[i], INPUT_PULLUP);
-  }
+  setupDigitalInputs();
 
-for (int i = 0; i < NUM_PWM; i++)
+  for (int i = 0; i < NUM_PWM; i++)
   {
     pinMode(pwmPins[i], OUTPUT);
     //analogWrite(pwmPins[i], 0);
   }
 
-  Serial.println("Before Ethernet.init");
+  Ethernet.init(10);
+  int dhcpResult = Ethernet.begin(mac);
 
-Ethernet.init(10);
-
-Serial.println("Before DHCP");
-
-int dhcpResult = Ethernet.begin(mac);
-
-Serial.println("After DHCP");
-
-Serial.print("DHCP result = ");
-Serial.println(dhcpResult);
-
-if (dhcpResult == 0)
-{
-    Serial.println("DHCP failed");
-}
+  if (dhcpResult == 0)
+  {
+      Serial.println("DHCP failed");
+  }
 
   Serial.print("IP: ");
   Serial.println(Ethernet.localIP());
 
   mqtt.setServer(mqttServer, 1883);
 
-Serial.print("MQTT Server set to: ");
-Serial.println(mqttServer);
+  Serial.print("MQTT Server set to: ");
+  Serial.println(mqttServer);
 
   mqtt.setBufferSize(1024);
 
@@ -612,7 +548,8 @@ void loop()
 
   mqtt.loop();
 
-  readInputs();
+  updateInputs();
+  publishInputChanges();
 
   if (millis() - lastPublish >= publishInterval)
   {
