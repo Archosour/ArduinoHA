@@ -53,6 +53,17 @@ void configureNode()
 
     saveConfig();
 
+      Serial.println();
+    Serial.println("Configuration entered:");
+
+    Serial.print("MQTT Server: ");
+    Serial.println(config.mqttServer);
+
+    Serial.print("MQTT User: ");
+    Serial.println(config.mqttUser);
+
+    Serial.println("MQTT Password: ********");
+
     Serial.println();
     Serial.println("Configuration saved.");
     Serial.println("Reset Arduino.");

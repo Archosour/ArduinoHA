@@ -2,11 +2,12 @@
 #define SENSORS_H
 
 #include <Arduino.h>
+#include "Pins.h"
 
-extern int adcValues[];
-extern float temperatures[];
-extern bool inputStates[];
-extern bool inputChanged[];
+extern int adcValues[NUM_ANALOG];
+extern float temperatures[NUM_ANALOG];
+extern bool inputStates[NUM_INPUTS];
+extern bool inputChanged[NUM_INPUTS];
 
 void initDigitalInputs();
 void updateSensors();
