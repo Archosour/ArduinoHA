@@ -282,11 +282,8 @@ void callback(char* topic, byte* payload, unsigned int length)
                   "}";
 
               mqtt.publish(
-                  ("home/" +
-                  nodeId +
-                  "/pwm" +
-                  String(pwm + 1) +
-                  "/state").c_str(),
+                
+                  stateTopic("pwm", pwm + 1).c_str(),
                   statePayload.c_str(),
                   true
               );
@@ -336,23 +333,13 @@ void reconnectMQTT()
 
       for (int i = 0; i < NUM_RELAYS; i++)
       {
-        mqtt.subscribe(
-            ("home/" +
-            nodeId +
-            "/relay" +
-            String(i + 1) +
-            "/set").c_str()
-        );
+        mqtt.subscribe(stateTopic("relay", i + 1).c_str());
       }
 
       for (int i = 0; i < NUM_RELAYS; i++)
       {
       mqtt.publish(
-          ("home/" +
-          nodeId +
-          "/relay" +
-          String(i + 1) +
-          "/state").c_str(),
+          stateTopic("relay", i + 1).c_str(),
           relayStates[i] ? "ON" : "OFF",
           true
         );
@@ -360,26 +347,12 @@ void reconnectMQTT()
 
       for (int i = 0; i < NUM_PWM; i++)
       {
-        mqtt.subscribe(
-          ("home/" +
-          nodeId +
-          "/pwm" +
-          String(i + 1) +
-          "/set").c_str()
-        );
+        mqtt.subscribe(commandTopic("pwm", i + 1).c_str());
       }
 
       for (int i = 0; i < NUM_PWM; i++)
       {
-      String stateTopic =
-          "home/" +
-          nodeId +
-          "/pwm" +
-          String(i + 1) +
-          "/state";
-
-        mqtt.publish(
-          stateTopic.c_str(),
+        mqtt.publish(stateTopic("pwm", i + 1).c_str(),
           "{\"state\":\"OFF\",\"brightness\":0}",
           true
         );

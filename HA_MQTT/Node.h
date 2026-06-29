@@ -10,4 +10,7 @@ extern byte mac[6];
 void buildNodeId();
 void buildMac();
 
+String stateTopic(const String& type, int index);
+String commandTopic(const String& type, int index);
+
 #endif

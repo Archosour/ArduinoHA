@@ -44,3 +44,13 @@ void buildMac()
 
     Serial.println();
 }
+
+String stateTopic(const String& type, int index)
+{
+    return "home/" + nodeId + "/" + type + String(index) + "/state";
+}
+
+String commandTopic(const String& type, int index)
+{
+    return "home/" + nodeId + "/" + type + String(index) + "/set";
+}
