@@ -1,4 +1,5 @@
 #include "Node.h"
+#include "Debug.h"
 #include <ArduinoUniqueID.h>
 
 String nodeId;
@@ -18,8 +19,8 @@ void buildNodeId()
 
   statusTopic = "home/" + nodeId + "/status";
 
-  Serial.print("Node ID: ");
-  Serial.println(nodeId);
+  LOGP("Node ID: ");
+  LOG(nodeId);
 }
 
 
@@ -34,15 +35,15 @@ void buildMac()
     mac[4] = UniqueID[6];
     mac[5] = UniqueID[8];
 
-    Serial.print("MAC: ");
+    LOGP("MAC: ");
 
     for (int i = 0; i < 6; i++)
     {
-        Serial.print(mac[i], HEX);
-        Serial.print(":");
+        LOGP(mac[i], HEX);
+        LOGP(":");
     }
 
-    Serial.println();
+    LOG();
 }
 
 String stateTopic(const String& type, int index)

@@ -1,5 +1,6 @@
 #include "Network.h"
 #include "Pins.h"
+#include "Debug.h"
 
 #include <Ethernet.h>
 
@@ -13,11 +14,11 @@ void initNetwork()
 
     if (Ethernet.begin(mac) == 0)
     {
-        Serial.println("DHCP failed");
+        LOG("DHCP failed");
     }
 
-    Serial.print("IP: ");
-    Serial.println(Ethernet.localIP());
+    LOGP("IP: ");
+    LOG(Ethernet.localIP());
 }
 
 void networkLoop()

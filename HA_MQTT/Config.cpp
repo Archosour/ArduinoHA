@@ -1,4 +1,5 @@
 #include "Config.h"
+#include "Debug.h"
 #include <EEPROM.h>
 
 #define CONFIG_MAGIC 0x435A1234
@@ -19,22 +20,22 @@ Config config;
 
 void configureNode()
 {
-    Serial.println();
-    Serial.println("=== CONFIGURATION MODE ===");
+    LOG();
+    LOG("=== CONFIGURATION MODE ===");
 
-    Serial.println("MQTT Server:");
+    LOG("MQTT Server:");
     while (!Serial.available());
-    String server = Serial.readStringUntil('\n');
+    String server = readLine();
     server.trim();
 
-    Serial.println("MQTT User:");
+    LOG("MQTT User:");
     while (!Serial.available());
-    String user = Serial.readStringUntil('\n');
+    String user = readLine();
     user.trim();
 
-    Serial.println("MQTT Password:");
+    LOG("MQTT Password:");
     while (!Serial.available());
-    String password = Serial.readStringUntil('\n');
+    String password = readLine();
     password.trim();
 
     config.magic = CONFIG_MAGIC;
@@ -53,20 +54,20 @@ void configureNode()
 
     saveConfig();
 
-      Serial.println();
-    Serial.println("Configuration entered:");
+    LOG();
+    LOG("Configuration entered:");
 
-    Serial.print("MQTT Server: ");
-    Serial.println(config.mqttServer);
+    LOG("MQTT Server: ");
+    LOG(config.mqttServer);
 
-    Serial.print("MQTT User: ");
-    Serial.println(config.mqttUser);
+    LOG("MQTT User: ");
+    LOG(config.mqttUser);
 
-    Serial.println("MQTT Password: ********");
+    LOG("MQTT Password: ********");
 
-    Serial.println();
-    Serial.println("Configuration saved.");
-    Serial.println("Reset Arduino.");
+    LOG();
+    LOG("Configuration saved.");
+    LOG("Reset Arduino.");
 
     while (true);
 }

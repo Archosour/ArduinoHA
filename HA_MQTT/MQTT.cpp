@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "Pins.h"
 #include "Sensors.h"
+#include "Debug.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <Ethernet.h>
@@ -85,10 +86,10 @@ void callback(char* topic, byte* payload, unsigned int length)
                   true
               );
 
-              Serial.print("PWM ");
-              Serial.print(pwm + 1);
-              Serial.print(" = ");
-              Serial.println(pwmValues[pwm]);
+              LOGP("PWM ");
+              LOGP(pwm + 1);
+              LOGP(" = ");
+              LOG(pwmValues[pwm]);
           }
         
       }
@@ -135,14 +136,14 @@ void publishSensors()
       true
     );
 
-    Serial.print("A");
-    Serial.print(i);
+    LOGP("A");
+    LOGP(i);
 
-    Serial.print(" ADC=");
-    Serial.print(adcValues[i]);
+    LOGP(" ADC=");
+    LOGP(adcValues[i]);
 
-    Serial.print(" Temp=");
-    Serial.println(temperatures[i]);
+    LOGP(" Temp=");
+    LOG(temperatures[i]);
   }
 }
 
@@ -302,14 +303,14 @@ void publishDiscovery()
     );
   }
 
-  Serial.println("Discovery published");
+  LOG("Discovery published");
 }
 
 void reconnectMQTT()
 {
   while (!mqtt.connected())
   {
-    Serial.println("Connecting MQTT...");
+    LOG("Connecting MQTT...");
 
     if (
       mqtt.connect(
@@ -323,7 +324,7 @@ void reconnectMQTT()
       )
     )
     {
-      Serial.println("MQTT connected");
+      LOG("MQTT connected");
 
       publishDiscovery();
 
@@ -364,8 +365,8 @@ void reconnectMQTT()
     }
     else
     {
-      Serial.print("MQTT failed: ");
-      Serial.println(mqtt.state());
+      LOGP("MQTT failed: ");
+      LOG(mqtt.state());
 
       delay(5000);
     }
@@ -401,17 +402,3 @@ void mqttLoop()
         publishSensors();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

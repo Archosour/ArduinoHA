@@ -12,19 +12,20 @@
 #include "Sensors.h"
 #include "Outputs.h"
 #include "MQTT.h"
+#include "Debug.h"
 
 void setup()
 {
-  Serial.begin(115200);
+  setupDebug();
 
   if (!loadConfig())
   {
-    Serial.println("No valid config found.");
+    LOG("No valid config found.");
     configureNode();
   }
 
-  Serial.println();
-  Serial.println("Press C within 5 seconds for configuration, disable line endings!");
+  LOG();
+  LOG("Press C within 5 seconds for configuration, disable line endings!");
 
   unsigned long startTime = millis();
 
@@ -41,6 +42,17 @@ void setup()
       }
   }
 
+  LOG();
+    LOG("Configuration entered:");
+
+    LOG("MQTT Server: ");
+    LOG(config.mqttServer);
+
+    LOG("MQTT User: ");
+    LOG(config.mqttUser);
+
+    LOG("MQTT Password: ********");
+
   buildNodeId();
   buildMac();
 
@@ -49,7 +61,6 @@ void setup()
 
   initOutputs();
   initDigitalInputs();
-
 }
 
 void loop()
