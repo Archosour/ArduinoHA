@@ -13,6 +13,7 @@
 #include "Outputs.h"
 #include "MQTT.h"
 #include "Debug.h"
+#include "Counters.h"
 
 void setup()
 {
@@ -61,6 +62,7 @@ void setup()
 
   initOutputs();
   initDigitalInputs();
+  initCounters();
 }
 
 void loop()
