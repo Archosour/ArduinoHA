@@ -10,6 +10,7 @@
 #include <ArduinoJson.h>
 #include <Ethernet.h>
 #include <PubSubClient.h>
+#include "Counters.h"
 
 IPAddress mqttServer;
 PubSubClient mqtt(ethClient);
@@ -113,6 +114,42 @@ void publishInputChanges()
                 true
             );
         }
+    }
+}
+
+void publishCounters()
+{
+    for (int i = 0; i < NUM_COUNTERS; i++)
+    {
+        mqtt.publish(
+            ("home/" +
+            nodeId +
+            "/counter" +
+            String(i + 1) +
+            "/count").c_str(),
+            String(pulseCount[i]).c_str(),
+            true
+        );
+
+        mqtt.publish(
+            ("home/" +
+            nodeId +
+            "/counter" +
+            String(i + 1) +
+            "/rate").c_str(),
+            String(pulseRate[i], 2).c_str(),
+            true
+        );
+
+        mqtt.publish(
+            ("home/" +
+            nodeId +
+            "/counter" +
+            String(i + 1) +
+            "/rpm").c_str(),
+            String(rpmValues[i], 1).c_str(),
+            true
+        );
     }
 }
 
@@ -303,6 +340,87 @@ void publishDiscovery()
     );
   }
 
+  for (int i = 0; i < NUM_COUNTERS; i++)
+{
+    String topic =
+        "homeassistant/sensor/" +
+        nodeId +
+        "_counter" +
+        String(i + 1) +
+        "_count/config";
+
+    String payload =
+        "{"
+        "\"name\":\"Counter " + String(i + 1) + " Count\","
+        "\"unique_id\":\"" + nodeId + "_counter" + String(i + 1) + "_count\","
+        "\"state_topic\":\"home/" + nodeId + "/counter" + String(i + 1) + "/count\","
+        "\"state_class\":\"total_increasing\","
+        "\"device\":{"
+            "\"identifiers\":[\"" + nodeId + "\"],"
+            "\"name\":\"" + nodeId + "\","
+            "\"manufacturer\":\"DIY\","
+            "\"model\":\"Arduino Mega W5500\""
+        "}"
+        "}";
+
+    mqtt.publish(topic.c_str(), payload.c_str(), true);
+}
+
+for (int i = 0; i < NUM_COUNTERS; i++)
+{
+    String topic =
+        "homeassistant/sensor/" +
+        nodeId +
+        "_counter" +
+        String(i + 1) +
+        "_rate/config";
+
+    String payload =
+        "{"
+        "\"name\":\"Counter " + String(i + 1) + " Rate\","
+        "\"unique_id\":\"" + nodeId + "_counter" + String(i + 1) + "_rate\","
+        "\"state_topic\":\"home/" + nodeId + "/counter" + String(i + 1) + "/rate\","
+        "\"unit_of_measurement\":\"Hz\","
+        "\"state_class\":\"measurement\","
+        "\"device\":{"
+            "\"identifiers\":[\"" + nodeId + "\"],"
+            "\"name\":\"" + nodeId + "\","
+            "\"manufacturer\":\"DIY\","
+            "\"model\":\"Arduino Mega W5500\""
+        "}"
+        "}";
+
+    mqtt.publish(topic.c_str(), payload.c_str(), true);
+
+    String topic2 =
+    "homeassistant/sensor/" +
+    nodeId +
+    "_counter" +
+    String(i + 1) +
+    "_rpm/config";
+
+String payload2 =
+    "{"
+    "\"name\":\"Counter " + String(i + 1) + " RPM\","
+    "\"unique_id\":\"" + nodeId + "_counter" + String(i + 1) + "_rpm\","
+    "\"state_topic\":\"home/" + nodeId + "/counter" + String(i + 1) + "/rpm\","
+    "\"unit_of_measurement\":\"RPM\","
+    "\"state_class\":\"measurement\","
+    "\"device\":{"
+        "\"identifiers\":[\"" + nodeId + "\"],"
+        "\"name\":\"" + nodeId + "\","
+        "\"manufacturer\":\"DIY\","
+        "\"model\":\"Arduino Mega W5500\""
+    "}"
+    "}";
+
+mqtt.publish(
+    topic2.c_str(),
+    payload2.c_str(),
+    true
+);
+}
+
   LOG("Discovery published");
 }
 
@@ -399,6 +517,10 @@ void mqttLoop()
     {
         lastPublish = millis();
 
+        updateCounters(publishInterval);
+
         publishSensors();
+
+        publishCounters();
     }
 }

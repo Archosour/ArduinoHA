@@ -2,10 +2,7 @@
 
 const uint8_t analogPins[NUM_ANALOG] =
 {
-    A0,
-    A1,
-    A2,
-    A3
+    A0,A1,A2,A3
 };
 
 const uint8_t relayPins[NUM_RELAYS] =
@@ -22,3 +19,9 @@ const uint8_t pwmPins[NUM_PWM] =
 {
     44,45,46
 };
+
+const uint8_t counterPins[NUM_COUNTERS] =
+{
+    2, 3,18,19,20,21
+};
+
