@@ -4,4 +4,6 @@
 void initMQTT();
 void mqttLoop();
 
+void publishOneWireSensors();
+
 #endif

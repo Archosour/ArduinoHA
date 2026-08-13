@@ -18,4 +18,6 @@ extern const uint8_t counterPins[];
 #define ETH_CS_PIN 10
 #define SD_CS_PIN  4
 
+#define ONEWIRE_PIN 38
+
 #endif

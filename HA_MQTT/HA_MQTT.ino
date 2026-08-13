@@ -14,6 +14,7 @@
 #include "MQTT.h"
 #include "Debug.h"
 #include "Counters.h"
+#include "OneWireSensors.h"
 
 void setup()
 {
@@ -63,6 +64,7 @@ void setup()
   initOutputs();
   initDigitalInputs();
   initCounters();
+  initOneWire();
 }
 
 void loop()
