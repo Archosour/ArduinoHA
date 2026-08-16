@@ -19,6 +19,7 @@ extern int oneWireSensorCount;
 void initOneWire();
 void discoverOneWireSensors();
 void updateOneWireSensors();
+bool rescanOneWire();
 
 String oneWireAddress(int index);
 bool isDS18B20(int index);

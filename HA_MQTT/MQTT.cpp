@@ -31,7 +31,32 @@ void callback(char* topic, byte* payload, unsigned int length)
         msg += (char)payload[i];
     }
 
+    LOGP("MQTT message received: ");
+    LOG(topic);
+
+    LOGP("Payload: ");
+    LOG(msg);
+
     String topicStr = topic;
+
+    if (topicStr == oneWireScanTopic())
+    {
+        if (msg == "SCAN")
+        {
+            LOG("OneWire scan requested.");
+
+            bool changed = rescanOneWire();
+
+            if (changed)
+            {
+                publishDiscovery();
+            }
+
+            publishOneWireSensors();
+        }
+
+        return;
+    }
 
     for (int i = 0; i < NUM_RELAYS; i++)
 {
@@ -192,6 +217,11 @@ String oneWireTopic(int index)
            "/onewire/" +
            oneWireAddress(index) +
            "/temperature";
+}
+
+String oneWireScanTopic()
+{
+    return "home/" + nodeId + "/onewire/scan";
 }
 
 void publishOneWireSensors()
@@ -509,6 +539,41 @@ void publishDiscovery()
         );
     }
 
+    // OneWire scan button
+
+    String scanTopic =
+        "homeassistant/button/" +
+        nodeId +
+        "_onewire_scan/config";
+
+    String scanPayload =
+        "{"
+        "\"name\":\"Scan OneWire bus\","
+        "\"unique_id\":\"" +
+            nodeId +
+            "_onewire_scan\","
+        "\"command_topic\":\"" +
+            oneWireScanTopic() +
+            "\","
+        "\"payload_press\":\"SCAN\","
+        "\"device\":{"
+            "\"identifiers\":[\"" +
+                nodeId +
+                "\"],"
+            "\"name\":\"" +
+                nodeId +
+                "\","
+            "\"manufacturer\":\"DIY\","
+            "\"model\":\"Arduino Mega W5500\""
+        "}"
+        "}";
+
+    mqtt.publish(
+        scanTopic.c_str(),
+        scanPayload.c_str(),
+        true
+    );
+
   LOG("Discovery published");
 }
 
@@ -518,17 +583,7 @@ void reconnectMQTT()
   {
     LOG("Connecting MQTT...");
 
-    if (
-      mqtt.connect(
-        nodeId.c_str(),
-        config.mqttUser,
-        config.mqttPassword,
-        statusTopic.c_str(),
-        1,
-        true,
-        "offline"
-      )
-    )
+    if (mqtt.connect(nodeId.c_str(), config.mqttUser, config.mqttPassword, statusTopic.c_str(), 1, true, "offline"))
     {
       LOG("MQTT connected");
 
@@ -555,6 +610,11 @@ void reconnectMQTT()
           true
         );
       }
+
+      mqtt.subscribe(oneWireScanTopic().c_str());
+
+        LOGP("Subscribed to: ");
+        LOG(oneWireScanTopic());
 
       for (int i = 0; i < NUM_PWM; i++)
       {

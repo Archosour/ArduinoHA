@@ -35,6 +35,8 @@ void discoverOneWireSensors()
 {
     byte address[8];
 
+    oneWireSensorCount = 0;
+
     oneWire.reset_search();
 
     while (oneWire.search(address))
@@ -45,7 +47,6 @@ void discoverOneWireSensors()
             break;
         }
 
-        // Verify ROM address
         if (OneWire::crc8(address, 7) != address[7])
         {
             LOG("Invalid OneWire ROM address.");
@@ -79,6 +80,54 @@ void discoverOneWireSensors()
     oneWire.reset_search();
 }
 
+bool rescanOneWire()
+{
+    LOG();
+    LOG("=== OneWire rescan ===");
+
+    int oldCount = oneWireSensorCount;
+
+    OneWireSensor oldSensors[MAX_ONEWIRE_SENSORS];
+
+    for (int i = 0; i < oldCount; i++)
+    {
+        oldSensors[i] = oneWireSensors[i];
+    }
+
+    discoverOneWireSensors();
+
+    bool changed = false;
+
+    if (oldCount != oneWireSensorCount)
+    {
+        changed = true;
+    }
+    else
+    {
+        for (int i = 0; i < oldCount; i++)
+        {
+            if (memcmp(
+                    oldSensors[i].address,
+                    oneWireSensors[i].address,
+                    8) != 0)
+            {
+                changed = true;
+                break;
+            }
+        }
+    }
+
+    if (changed)
+    {
+        LOG("OneWire device list changed.");
+    }
+    else
+    {
+        LOG("OneWire device list unchanged.");
+    }
+
+    return changed;
+}
 
 // --------------------------------------------------
 // Update temperatures
